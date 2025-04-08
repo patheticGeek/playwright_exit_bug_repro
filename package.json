@@ -1,0 +1,18 @@
+{
+  "name": "playwright_exit_bug_repro",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "pnpm pm2 start index.js --name playwright_exit_test && pnpm pm2 logs playwright_exit_test",
+    "kill": "pnpm pm2 stop playwright_exit_test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "playwright": "^1.51.1",
+    "pm2": "^6.0.5"
+  }
+}
