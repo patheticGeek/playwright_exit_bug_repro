@@ -85,6 +85,7 @@ new Promise(resolve => setTimeout(() => resolve(document.body.outerHTML), 3000))
       process.exit(0);
     }, 10 * 1000);
   } finally {
+    console.log("cleaning in finally");
     await playwright.cleanup(true);
   }
 }
