@@ -21,6 +21,7 @@ class Playwright {
     console.log("Playwright -> init");
     this.browser = await chromium.launch({
       headless: true,
+      // all handle are disabled as we dont want browser to close unless doing so ourselves
       handleSIGHUP: false,
       handleSIGINT: false,
       handleSIGTERM: false,
@@ -31,20 +32,23 @@ class Playwright {
   };
 
   newPage = async () => {
-    console.log("Playwright -> newPage");
     if (!this.browser) {
       await this.init();
     }
 
+    console.log("Playwright -> newPage");
     const page = await this.browser.newPage();
     return page;
   };
 
+  // if we received a kill signal or forcing only then close the browser
   cleanup = async (force = false) => {
-    console.log("Playwright -> cleanup");
-    if (force || this.receivedKillSignal) {
+    const shouldClose = force || this.receivedKillSignal;
+    console.log("Playwright -> cleanup -> shouldClose", shouldClose);
+    if (shouldClose && this.browser) {
       await this.browser.close();
       this.browser = null;
+      return true;
     }
   };
 }
@@ -52,23 +56,37 @@ class Playwright {
 const playwright = new Playwright();
 
 async function main() {
-  const arr = new Array(30).fill(null);
+  try {
+    console.log("process start");
+    const arr = new Array(20).fill(null);
 
-  // iterate over some pages to stimulate work
-  for (const i in arr) {
-    const page = await playwright.newPage();
-    await page.goto("https://example.com/" + i, { waitUntil: "networkidle" });
-    await page.close();
-  }
+    // iterate over some pages to stimulate work, try to do pnpm kill in between this
+    for (const i in arr) {
+      const page = await playwright.newPage();
+      await page.goto("https://example.com/" + i, { waitUntil: "networkidle" });
+      console.log("loaded, get content");
+      const content = await page.evaluate(`
+new Promise(resolve => setTimeout(() => resolve(document.body.outerHTML), 3000)) // stimulate a long get content call  
+    `);
+      console.log("has content", !!content);
+      await page.close();
+    }
 
-  // this will close the browser if we have received a kill signal
-  await playwright.cleanup();
+    // this should close the browser if we have received a kill signal
+    const exited = await playwright.cleanup();
+    // if it closed then we have kill signal so exit
+    // but we dont reach till end of loop as playwright throws error on a kill signal
+    if (exited) return;
 
-  // this will close the browser in some time regardless of kill signal receive
-  setTimeout(async () => {
-    console.log("setTimeout force cleanup");
+    // this will close the browser in some time regardless of kill signal receive
+    setTimeout(async () => {
+      console.log("setTimeout force cleanup");
+      await playwright.cleanup(true);
+      process.exit(0);
+    }, 10 * 1000);
+  } finally {
     await playwright.cleanup(true);
-  }, 10 * 1000);
+  }
 }
 
 main()
