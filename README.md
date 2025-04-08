@@ -29,10 +29,20 @@ Sample log:
 0|playwright_exit_test  | has content true
 0|playwright_exit_test  | Playwright -> newPage
 0|playwright_exit_test  | loaded, get content
+0|playwright_exit_test  | has content true
+0|playwright_exit_test  | Playwright -> newPage
+0|playwright_exit_test  | loaded, get content
+0|playwright_exit_test  | has content true
+0|playwright_exit_test  | Playwright -> newPage
 0|playwright_exit_test  | Playwright -> signal: SIGINT
+0|playwright_exit_test  | cleaning in finally
 0|playwright_exit_test  | Playwright -> cleanup -> shouldClose true
-0|playwright_exit_test  | page.evaluate: Target page, context or browser has been closed
-0|playwright_exit_test  |     at main (/home/work/git/playwright_exit_bug_repro/index.js:68:34)
+0|playwright_exit_test  | page.goto: net::ERR_ABORTED at https://example.com/3
+0|playwright_exit_test  | Call log:
+0|playwright_exit_test  |   - navigating to "https://example.com/3", waiting until "networkidle"
+0|playwright_exit_test  |     at main (/home/work/git/playwright_exit_bug_repro/index.js:66:18) {
+0|playwright_exit_test  |   name: 'Error'
+0|playwright_exit_test  | }
 0|playwright_exit_test  | process exited
 ```
 
